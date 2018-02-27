@@ -989,6 +989,31 @@ func (c *Conn) requestHeader(apiKey apiKey, apiVersion apiVersion, correlationID
 	}
 }
 
+// ApiVersions return the list of API versions supported by the broker.
+func (c *Conn) ApiVersions() (versions []ApiVersionsV1, err error) {
+
+	err = c.readOperation(
+		func(deadline time.Time, id int32) error {
+			return c.writeRequest(apiVersionsRequest, v1, id, apiVersionsRequestV1{})
+		},
+		func(deadline time.Time, size int) error {
+			var response apiVersionsResponseV1
+
+			if err := c.readResponse(size, &response); err != nil {
+				return err
+			}
+			versions = response.ApiVersions
+
+			return nil
+		},
+	)
+	if err != nil {
+		return
+	}
+
+	return
+}
+
 // connDeadline is a helper type to implement read/write deadline management on
 // the kafka connection.
 type connDeadline struct {

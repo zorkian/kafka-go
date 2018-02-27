@@ -233,6 +233,11 @@ func TestConn(t *testing.T) {
 			scenario: "test delete topics with an invalid topic",
 			function: testDeleteTopicsInvalidTopic,
 		},
+
+		{
+			scenario: "test api versions",
+			function: testApiVersions,
+		},
 	}
 
 	const (
@@ -892,7 +897,17 @@ func testDeleteTopicsInvalidTopic(t *testing.T, conn *Conn) {
 		t.Fatalf("bad ReadPartitions: %v", err)
 	}
 	if len(partitions) != 0 {
-		t.Fatal("exepected partitions to be empty")
+		t.Fatal("expected partitions to be empty")
+	}
+}
+
+func testApiVersions(t *testing.T, conn *Conn) {
+	versions, err := conn.ApiVersions()
+	if err != nil {
+		t.Fatalf("bad ApiVersion: %v", err)
+	}
+	if len(versions) != 38 {
+		t.Fatal("expected at least 38 API keys")
 	}
 }
 
