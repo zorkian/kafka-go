@@ -989,8 +989,7 @@ func (c *Conn) requestHeader(apiKey apiKey, apiVersion apiVersion, correlationID
 	}
 }
 
-// ApiVersions return the list of API versions supported by the broker.
-func (c *Conn) ApiVersions() (versions []ApiVersionsV1, err error) {
+func (c *Conn) apiVersions() (versions []apiVersionsV1, err error) {
 
 	err = c.readOperation(
 		func(deadline time.Time, id int32) error {

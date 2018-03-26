@@ -16,7 +16,7 @@ func (a apiVersionsRequestV1) writeTo(w *bufio.Writer) {
 
 type apiVersionsResponseV1 struct {
 	ErrorCode      int16
-	ApiVersions    []ApiVersionsV1
+	ApiVersions    []apiVersionsV1
 	ThrottleTimeMs int32
 }
 
@@ -38,7 +38,7 @@ func (a *apiVersionsResponseV1) readFrom(r *bufio.Reader, size int) (remain int,
 	}
 
 	fn := func(withReader *bufio.Reader, withSize int) (fnRemain int, fnErr error) {
-		var ver ApiVersionsV1
+		var ver apiVersionsV1
 		if fnRemain, fnErr = (&ver).readFrom(withReader, withSize); err != nil {
 			return
 		}
@@ -56,25 +56,25 @@ func (a *apiVersionsResponseV1) readFrom(r *bufio.Reader, size int) (remain int,
 	return
 }
 
-type ApiVersionsV1 struct {
+type apiVersionsV1 struct {
 	ApiKey     int16
 	MinVersion int16
 	MaxVersion int16
 }
 
-func (a ApiVersionsV1) size() int32 {
+func (a apiVersionsV1) size() int32 {
 	return sizeofInt16(a.ApiKey) +
 		sizeofInt16(a.MinVersion) +
 		sizeofInt16(a.MaxVersion)
 }
 
-func (a ApiVersionsV1) writeTo(w *bufio.Writer) {
+func (a apiVersionsV1) writeTo(w *bufio.Writer) {
 	writeInt16(w, a.ApiKey)
 	writeInt16(w, a.MinVersion)
 	writeInt16(w, a.MaxVersion)
 }
 
-func (a *ApiVersionsV1) readFrom(r *bufio.Reader, size int) (remain int, err error) {
+func (a *apiVersionsV1) readFrom(r *bufio.Reader, size int) (remain int, err error) {
 	if remain, err = readInt16(r, size, &a.ApiKey); err != nil {
 		return
 	}

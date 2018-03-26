@@ -902,7 +902,7 @@ func testDeleteTopicsInvalidTopic(t *testing.T, conn *Conn) {
 }
 
 func testApiVersions(t *testing.T, conn *Conn) {
-	versions, err := conn.ApiVersions()
+	versions, err := conn.apiVersions()
 	if err != nil {
 		t.Fatalf("bad ApiVersion: %v", err)
 	}
