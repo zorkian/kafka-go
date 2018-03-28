@@ -9,22 +9,22 @@ import (
 type apiKey int16
 
 const (
-	produceRequest          apiKey = 0
-	fetchRequest            apiKey = 1
-	listOffsetRequest       apiKey = 2
-	metadataRequest         apiKey = 3
-	offsetCommitRequest     apiKey = 8
-	offsetFetchRequest      apiKey = 9
-	groupCoordinatorRequest apiKey = 10
-	joinGroupRequest        apiKey = 11
-	heartbeatRequest        apiKey = 12
-	leaveGroupRequest       apiKey = 13
-	syncGroupRequest        apiKey = 14
-	describeGroupsRequest   apiKey = 15
-	listGroupsRequest       apiKey = 16
-	apiVersionsRequest      apiKey = 18
-	createTopicsRequest     apiKey = 19
-	deleteTopicsRequest     apiKey = 20
+	produceRequest         apiKey = 0
+	fetchRequest           apiKey = 1
+	listOffsetRequest      apiKey = 2
+	metadataRequest        apiKey = 3
+	offsetCommitRequest    apiKey = 8
+	offsetFetchRequest     apiKey = 9
+	findCoordinatorRequest apiKey = 10
+	joinGroupRequest       apiKey = 11
+	heartbeatRequest       apiKey = 12
+	leaveGroupRequest      apiKey = 13
+	syncGroupRequest       apiKey = 14
+	describeGroupsRequest  apiKey = 15
+	listGroupsRequest      apiKey = 16
+	apiVersionsRequest     apiKey = 18
+	createTopicsRequest    apiKey = 19
+	deleteTopicsRequest    apiKey = 20
 )
 
 type apiVersion int16

@@ -184,7 +184,7 @@ func (c *Conn) findCoordinator(request findCoordinatorRequestV1) (findCoordinato
 
 	err := c.readOperation(
 		func(deadline time.Time, id int32) error {
-			return c.writeRequest(groupCoordinatorRequest, v1, id, request)
+			return c.writeRequest(findCoordinatorRequest, v1, id, request)
 		},
 		func(deadline time.Time, size int) error {
 			return expectZeroSize(func() (remain int, err error) {
