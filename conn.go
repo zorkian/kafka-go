@@ -70,6 +70,9 @@ type Conn struct {
 
 	// number of replica acks required when publishing to a partition
 	requiredAcks int32
+
+	// map of version per API Key
+	apiVersions map[apiKey]apiVersion
 }
 
 // ConnConfig is a configuration object used to create new instances of Conn.
@@ -138,10 +141,11 @@ func NewConnWith(conn net.Conn, config ConnConfig) *Conn {
 
 // DeleteTopics deletes the specified topics.
 func (c *Conn) DeleteTopics(topics ...string) error {
-	_, err := c.deleteTopics(deleteTopicsRequestV1{
-		Topics: topics,
-	})
-	return err
+	deleteTopicApiVersion, err := c.apiVersion(deleteTopicsRequest)
+	if err != nil {
+		return err
+	}
+	return c.deleteTopics(deleteTopicApiVersion, topics...)
 }
 
 // describeGroups retrieves the specified groups
@@ -653,9 +657,14 @@ func (c *Conn) ReadOffsets() (first int64, last int64, err error) {
 }
 
 func (c *Conn) readOffset(t int64) (offset int64, err error) {
+	var offsetApiVersion apiVersion
+	if offsetApiVersion, err = c.apiVersion(listOffsetRequest); err != nil {
+		return
+	}
+
 	err = c.readOperation(
 		func(deadline time.Time, id int32) error {
-			return writeListOffsetRequestV1(&c.wbuf, id, c.clientID, c.topic, c.partition, t)
+			return writeListOffsetRequest(&c.wbuf, offsetApiVersion, id, c.clientID, c.topic, c.partition, t)
 		},
 		func(deadline time.Time, size int) error {
 			return expectZeroSize(readArrayWith(&c.rbuf, size, func(r *bufio.Reader, size int) (int, error) {
@@ -669,16 +678,9 @@ func (c *Conn) readOffset(t int64) (offset int64, err error) {
 				// Reading the array of partitions, there will be only one
 				// partition which gives the offset we're looking for.
 				return readArrayWith(r, size, func(r *bufio.Reader, size int) (int, error) {
-					var p partitionOffsetV1
-					size, err := p.readFrom(r, size)
-					if err != nil {
-						return size, err
-					}
-					if p.ErrorCode != 0 {
-						return size, Error(p.ErrorCode)
-					}
-					offset = p.Offset
-					return size, nil
+					var err error
+					offset, size, err = readPartitionOffset(r, offsetApiVersion, size)
+					return size, err
 				})
 			}))
 		},
@@ -989,8 +991,36 @@ func (c *Conn) requestHeader(apiKey apiKey, apiVersion apiVersion, correlationID
 	}
 }
 
-func (c *Conn) apiVersions() (versions []apiVersionsV1, err error) {
+func (c *Conn) apiVersion(key apiKey) (apiVersion, error) {
+	if len(c.apiVersions) == 0 {
+		if err := c.loadApiVersions(); err != nil {
+			return 0, err
+		}
+	}
 
+	if version, ok := c.apiVersions[key]; ok {
+		return version, nil
+	}
+	return 0, fmt.Errorf("api key %d not found", key)
+}
+
+func (c *Conn) loadApiVersions() error {
+	versions, err := c.fetchApiVersions()
+	if err != nil {
+		return err
+	}
+
+	if c.apiVersions == nil {
+		c.apiVersions = make(map[apiKey]apiVersion)
+	}
+
+	for _, version := range versions {
+		c.apiVersions[apiKey(version.ApiKey)] = apiVersion(version.MaxVersion)
+	}
+	return nil
+}
+
+func (c *Conn) fetchApiVersions() (versions []apiVersionsV1, err error) {
 	err = c.readOperation(
 		func(deadline time.Time, id int32) error {
 			return c.writeRequest(apiVersionsRequest, v1, id, apiVersionsRequestV1{})
@@ -1006,10 +1036,6 @@ func (c *Conn) apiVersions() (versions []apiVersionsV1, err error) {
 			return nil
 		},
 	)
-	if err != nil {
-		return
-	}
-
 	return
 }
 

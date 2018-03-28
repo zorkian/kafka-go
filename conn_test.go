@@ -235,8 +235,8 @@ func TestConn(t *testing.T) {
 		},
 
 		{
-			scenario: "test api versions",
-			function: testApiVersions,
+			scenario: "test api version",
+			function: testApiVersion,
 		},
 	}
 
@@ -901,12 +901,12 @@ func testDeleteTopicsInvalidTopic(t *testing.T, conn *Conn) {
 	}
 }
 
-func testApiVersions(t *testing.T, conn *Conn) {
-	versions, err := conn.apiVersions()
+func testApiVersion(t *testing.T, conn *Conn) {
+	_, err := conn.apiVersion(2)
 	if err != nil {
-		t.Fatalf("bad ApiVersion: %v", err)
+		t.Fatalf("bad apiVersion: %v", err)
 	}
-	if len(versions) != 38 {
+	if len(conn.apiVersions) < 38 {
 		t.Fatal("expected at least 38 API keys")
 	}
 }
