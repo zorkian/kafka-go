@@ -176,6 +176,34 @@ func (c *Conn) describeGroups(request describeGroupsRequestV1) (describeGroupsRe
 	return response, nil
 }
 
+func (c *Conn) findCoordinator(groupID string) (Coordinator, error) {
+	findCoordinatorApiVersion, err := c.apiVersion(findCoordinatorRequest)
+	if err != nil {
+		return Coordinator{}, err
+	}
+
+	switch {
+	case findCoordinatorApiVersion >= v1:
+		resp, err := c.findCoordinatorV1(findCoordinatorRequestV1{
+			CoordinatorKey: groupID,
+		})
+		return Coordinator{
+			NodeID: resp.Coordinator.NodeID,
+			Host:   resp.Coordinator.Host,
+			Port:   resp.Coordinator.Port,
+		}, err
+	default:
+		resp, err := c.findCoordinatorV0(findCoordinatorRequestV0{
+			CoordinatorKey: groupID,
+		})
+		return Coordinator{
+			NodeID: resp.Coordinator.NodeID,
+			Host:   resp.Coordinator.Host,
+			Port:   resp.Coordinator.Port,
+		}, err
+	}
+}
+
 // findCoordinatorV1 finds the coordinator for the specified group or transaction
 //
 // See http://kafka.apache.org/protocol.html#The_Messages_FindCoordinator
@@ -197,6 +225,32 @@ func (c *Conn) findCoordinatorV1(request findCoordinatorRequestV1) (findCoordina
 	}
 	if response.ErrorCode != 0 {
 		return findCoordinatorResponseV1{}, Error(response.ErrorCode)
+	}
+
+	return response, nil
+}
+
+// findCoordinatorV0 finds the coordinator for the specified group or transaction
+//
+// See http://kafka.apache.org/protocol.html#The_Messages_FindCoordinator
+func (c *Conn) findCoordinatorV0(request findCoordinatorRequestV0) (findCoordinatorResponseV0, error) {
+	var response findCoordinatorResponseV0
+
+	err := c.readOperation(
+		func(deadline time.Time, id int32) error {
+			return c.writeRequest(findCoordinatorRequest, v0, id, request)
+		},
+		func(deadline time.Time, size int) error {
+			return expectZeroSize(func() (remain int, err error) {
+				return (&response).readFrom(&c.rbuf, size)
+			}())
+		},
+	)
+	if err != nil {
+		return findCoordinatorResponseV0{}, err
+	}
+	if response.ErrorCode != 0 {
+		return findCoordinatorResponseV0{}, Error(response.ErrorCode)
 	}
 
 	return response, nil
