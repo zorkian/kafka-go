@@ -176,10 +176,10 @@ func (c *Conn) describeGroups(request describeGroupsRequestV1) (describeGroupsRe
 	return response, nil
 }
 
-// findCoordinator finds the coordinator for the specified group or transaction
+// findCoordinatorV1 finds the coordinator for the specified group or transaction
 //
 // See http://kafka.apache.org/protocol.html#The_Messages_FindCoordinator
-func (c *Conn) findCoordinator(request findCoordinatorRequestV1) (findCoordinatorResponseV1, error) {
+func (c *Conn) findCoordinatorV1(request findCoordinatorRequestV1) (findCoordinatorResponseV1, error) {
 	var response findCoordinatorResponseV1
 
 	err := c.readOperation(

@@ -472,7 +472,7 @@ func waitForCoordinator(t *testing.T, conn *Conn, groupID string) {
 	// appear to happen if the kafka been running for a while.
 	const maxAttempts = 20
 	for attempt := 1; attempt <= maxAttempts; attempt++ {
-		_, err := conn.findCoordinator(findCoordinatorRequestV1{
+		_, err := conn.findCoordinatorV1(findCoordinatorRequestV1{
 			CoordinatorKey: groupID,
 		})
 		switch err {
@@ -576,7 +576,7 @@ func testConnFindCoordinator(t *testing.T, conn *Conn) {
 		if attempt != 0 {
 			time.Sleep(time.Millisecond * 50)
 		}
-		response, err := conn.findCoordinator(findCoordinatorRequestV1{CoordinatorKey: groupID})
+		response, err := conn.findCoordinatorV1(findCoordinatorRequestV1{CoordinatorKey: groupID})
 		if err != nil {
 			switch err {
 			case GroupCoordinatorNotAvailable:

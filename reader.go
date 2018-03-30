@@ -125,7 +125,7 @@ func (r *Reader) lookupCoordinator() (string, error) {
 	}
 	defer conn.Close()
 
-	out, err := conn.findCoordinator(findCoordinatorRequestV1{
+	out, err := conn.findCoordinatorV1(findCoordinatorRequestV1{
 		CoordinatorKey: r.config.GroupID,
 	})
 	if err != nil {
