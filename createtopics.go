@@ -242,9 +242,7 @@ func (c *Conn) CreateTopics(topics ...TopicConfig) error {
 	if err != nil {
 		return err
 	}
-
 	return c.createTopics(createTopicsVersion, topics...)
-
 }
 
 func (c *Conn) createTopics(version apiVersion, topics ...TopicConfig) error {

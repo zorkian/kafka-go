@@ -1055,7 +1055,7 @@ func (c *Conn) apiVersion(key apiKey) (apiVersion, error) {
 	if version, ok := c.apiVersions[key]; ok {
 		return version, nil
 	}
-	return 0, fmt.Errorf("api key %d not found", key)
+	return 0, UnsupportedVersion
 }
 
 func (c *Conn) loadApiVersions() error {
@@ -1074,13 +1074,13 @@ func (c *Conn) loadApiVersions() error {
 	return nil
 }
 
-func (c *Conn) fetchApiVersions() (versions []apiVersionsV1, err error) {
+func (c *Conn) fetchApiVersions() (versions []apiVersionsV0, err error) {
 	err = c.readOperation(
 		func(deadline time.Time, id int32) error {
-			return c.writeRequest(apiVersionsRequest, v1, id, apiVersionsRequestV1{})
+			return c.writeRequest(apiVersionsRequest, v0, id, apiVersionsRequestV0{})
 		},
 		func(deadline time.Time, size int) error {
-			var response apiVersionsResponseV1
+			var response apiVersionsResponseV0
 
 			if err := c.readResponse(size, &response); err != nil {
 				return err

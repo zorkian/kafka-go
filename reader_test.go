@@ -256,11 +256,11 @@ func testReaderOutOfRangeGetsCanceled(t *testing.T, ctx context.Context, r *Read
 	}
 }
 
-func createTopic(t *testing.T, topic string, partitions int) {
+func createTopic(t *testing.T, topic string, partitions int) error {
 	conn, err := Dial("tcp", "localhost:9092")
 	if err != nil {
 		t.Error("bad conn")
-		return
+		return err
 	}
 	defer conn.Close()
 
@@ -274,10 +274,14 @@ func createTopic(t *testing.T, topic string, partitions int) {
 		// ok
 	case TopicAlreadyExists:
 		// ok
+	case UnsupportedVersion:
+		// ok
 	default:
 		t.Error("bad createTopics", err)
 		t.FailNow()
 	}
+
+	return err
 }
 
 func TestReaderOnNonZeroPartition(t *testing.T) {
