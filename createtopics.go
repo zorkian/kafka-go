@@ -2,6 +2,7 @@ package kafka
 
 import (
 	"bufio"
+	"fmt"
 	"time"
 )
 
@@ -233,7 +234,46 @@ func (t *createTopicsResponseV2) readFrom(r *bufio.Reader, size int) (remain int
 	return
 }
 
-func (c *Conn) createTopics(request createTopicsRequestV2) (createTopicsResponseV2, error) {
+// CreateTopics creates one topic per provided configuration with idempotent
+// operational semantics. In other words, if CreateTopics is invoked with a
+// configuration for an existing topic, it will have no effect.
+func (c *Conn) CreateTopics(topics ...TopicConfig) error {
+	createTopicsVersion, err := c.apiVersion(createTopicsRequest)
+	if err != nil {
+		return err
+	}
+
+	return c.createTopics(createTopicsVersion, topics...)
+
+}
+
+func (c *Conn) createTopics(version apiVersion, topics ...TopicConfig) error {
+	switch {
+	case version >= v2:
+		var requestV2Topics []createTopicsRequestV2Topic
+		for _, t := range topics {
+			requestV2Topics = append(
+				requestV2Topics,
+				t.toCreateTopicsRequestV2Topic())
+		}
+
+		_, err := c.createTopicsV2(createTopicsRequestV2{
+			Topics: requestV2Topics,
+		})
+
+		switch err {
+		case TopicAlreadyExists:
+			// ok
+			return nil
+		default:
+			return err
+		}
+	default:
+		return fmt.Errorf("unsupported version %d createTopics", version)
+	}
+}
+
+func (c *Conn) createTopicsV2(request createTopicsRequestV2) (createTopicsResponseV2, error) {
 	var response createTopicsResponseV2
 
 	err := c.writeOperation(
@@ -261,28 +301,4 @@ func (c *Conn) createTopics(request createTopicsRequestV2) (createTopicsResponse
 	}
 
 	return response, nil
-}
-
-// CreateTopics creates one topic per provided configuration with idempotent
-// operational semantics. In other words, if CreateTopics is invoked with a
-// configuration for an existing topic, it will have no effect.
-func (c *Conn) CreateTopics(topics ...TopicConfig) error {
-	var requestV2Topics []createTopicsRequestV2Topic
-	for _, t := range topics {
-		requestV2Topics = append(
-			requestV2Topics,
-			t.toCreateTopicsRequestV2Topic())
-	}
-
-	_, err := c.createTopics(createTopicsRequestV2{
-		Topics: requestV2Topics,
-	})
-
-	switch err {
-	case TopicAlreadyExists:
-		// ok
-		return nil
-	default:
-		return err
-	}
 }

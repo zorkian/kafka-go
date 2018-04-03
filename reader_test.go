@@ -264,15 +264,10 @@ func createTopic(t *testing.T, topic string, partitions int) {
 	}
 	defer conn.Close()
 
-	_, err = conn.createTopics(createTopicsRequestV2{
-		Topics: []createTopicsRequestV2Topic{
-			{
-				Topic:             topic,
-				NumPartitions:     int32(partitions),
-				ReplicationFactor: 1,
-			},
-		},
-		Timeout: int32(30 * time.Second / time.Millisecond),
+	err = conn.CreateTopics(TopicConfig{
+		Topic:             topic,
+		NumPartitions:     partitions,
+		ReplicationFactor: 1,
 	})
 	switch err {
 	case nil:
