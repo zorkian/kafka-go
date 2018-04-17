@@ -902,7 +902,7 @@ func testDeleteTopicsInvalidTopic(t *testing.T, conn *Conn) {
 }
 
 func testApiVersion(t *testing.T, conn *Conn) {
-	_, err := conn.apiVersion(2)
+	_, err := conn.apiVersion(listOffsetRequest)
 	if err != nil {
 		t.Fatalf("bad apiVersion: %v", err)
 	}

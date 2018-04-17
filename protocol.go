@@ -27,6 +27,44 @@ const (
 	deleteTopicsRequest    apiKey = 20
 )
 
+func (a apiKey) String() string {
+	switch a {
+	case produceRequest:
+		return "produceRequest"
+	case fetchRequest:
+		return "fetchRequest"
+	case listOffsetRequest:
+		return "listOffsetRequest"
+	case metadataRequest:
+		return "metadataRequest"
+	case offsetCommitRequest:
+		return "offsetCommitRequest"
+	case offsetFetchRequest:
+		return "offsetFetchRequest"
+	case findCoordinatorRequest:
+		return "findCoordinatorRequest"
+	case joinGroupRequest:
+		return "joinGroupRequest"
+	case heartbeatRequest:
+		return "heartbeatRequest"
+	case leaveGroupRequest:
+		return "leaveGroupRequest"
+	case syncGroupRequest:
+		return "syncGroupRequest"
+	case describeGroupsRequest:
+		return "describeGroupsRequest"
+	case listGroupsRequest:
+		return "listGroupsRequest"
+	case apiVersionsRequest:
+		return "apiVersionsRequest"
+	case createTopicsRequest:
+		return "createTopicsRequest"
+	case deleteTopicsRequest:
+		return "deleteTopicsRequest"
+	}
+	return "unknown"
+}
+
 type apiVersion int16
 
 const (
